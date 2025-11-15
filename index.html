@@ -23,16 +23,14 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 <div class="word-container" id="wordContainer"></div>
 
 <script>
-// CSV dosyasından veri okuyacak ve JSON olarak yükleyecek (GitHub Pages ile uyumlu)
 fetch('english_words_seen.csv')
   .then(response => response.text())
   .then(text => {
-      const lines = text.trim().split('\n').slice(1); // başlık satırını atla
+      const lines = text.trim().split('\n').slice(1);
       const wordsData = lines.map(line => {
-          const parts = line.split(',');
-          // İlk virgül kelime ve kalan kısmı örnekler olarak al
-          const word = parts[0].replace(/^"|"$/g, '').trim();
-          const examples = parts.slice(1).join(',').replace(/^"|"$/g, '').replace(/\"/g, '"').trim();
+          const firstComma = line.indexOf(',');
+          const word = line.slice(0, firstComma).replace(/^"|"$/g, '').trim();
+          const examples = line.slice(firstComma+1).replace(/^"|"$/g, '').replace(/\"/g, '"').trim();
           return { English_Word: word, Examples: examples };
       });
 
