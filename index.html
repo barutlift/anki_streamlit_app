@@ -33,9 +33,13 @@ fetch('english_words_seen.csv')
       const wordsData = lines.map(line => {
           const firstComma = line.indexOf(',');
           const word = line.slice(0, firstComma).replace(/^\"|\"$/g,'').trim();
-          const examplesRaw = line.slice(firstComma+1).replace(/^\"|\"$/g,'').trim();
-          // "\n" ile ayrılmış tüm cümleleri liste yap
-          const examples = examplesRaw.split(/\n/).map(e => e.replace(/^- /,'').trim()).filter(e => e);
+          let examplesRaw = line.slice(firstComma+1).replace(/^\"|\"$/g,'').trim();
+
+          // Her satırı ayır ve baştaki "- " veya "- -" gibi fazlalıkları temizle
+          const examples = examplesRaw.split(/\n/)
+                                    .map(e => e.replace(/^-\s*-?\s*/, '').trim())
+                                    .filter(e => e);
+
           return { English_Word: word, Examples: examples };
       });
 
@@ -72,10 +76,7 @@ fetch('english_words_seen.csv')
           });
       }
 
-      // ilk açılışta random 5 kelime
       showRandomWords();
-
-      // random butonuna basınca başka 5 kelime
       randomBtn.addEventListener('click', showRandomWords);
 
   })
