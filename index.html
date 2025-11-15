@@ -10,7 +10,8 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 .word-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
 .word-button { background-color: #FFD60A; color: black; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 50px; border: 2px solid #333; cursor: pointer; transition: all 0.3s; }
 .word-button:hover { background-color: #FFC300; transform: translateY(-2px); }
-.example-box { background-color: #333; color: #fff; padding: 10px 16px; border-radius: 10px; margin-top: 5px; white-space: pre-line; max-width: 90%; word-wrap: break-word; }
+.example-box { background-color: #333; color: #fff; padding: 10px 16px; border-radius: 10px; margin-top: 5px; white-space: pre-line; max-width: 90%; word-wrap: break-word; display: none; }
+#randomBtn { display:block; margin: 20px auto; padding: 10px 20px; font-size:1.1rem; cursor:pointer; border-radius:8px; background-color:#1E3A8A; color:white; border:none; }
 @media (max-width: 600px) {
     .word-button { font-size: 1rem; padding: 10px 16px; min-width: 120px; }
     .example-box { font-size: 0.9rem; }
@@ -20,39 +21,54 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 <body>
 
 <h1>Kelime Oyunu</h1>
+<button id="randomBtn">Random 5 Kelime</button>
 <div class="word-container" id="wordContainer"></div>
 
 <script>
+// CSV'den çekilecek veri
 fetch('english_words_seen.csv')
   .then(response => response.text())
   .then(text => {
-      const lines = text.trim().split('\n').slice(1);
+      const lines = text.trim().split('\n').slice(1); // başlığı atla
       const wordsData = lines.map(line => {
           const firstComma = line.indexOf(',');
-          const word = line.slice(0, firstComma).replace(/^"|"$/g, '').trim();
-          const examples = line.slice(firstComma+1).replace(/^"|"$/g, '').replace(/\"/g, '"').trim();
+          const word = line.slice(0, firstComma).replace(/^\"|\"$/g,'').trim();
+          const examples = line.slice(firstComma+1).replace(/^\"|\"$/g,'').replace(/\\"/g,'"').trim();
           return { English_Word: word, Examples: examples };
       });
 
       const wordContainer = document.getElementById('wordContainer');
+      const randomBtn = document.getElementById('randomBtn');
 
-      wordsData.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = 'word-button';
-          btn.innerText = item.English_Word;
+      function showRandomWords() {
+          wordContainer.innerHTML = '';
+          const shuffled = wordsData.sort(() => 0.5 - Math.random());
+          const selected = shuffled.slice(0, 5);
 
-          const exampleBox = document.createElement('div');
-          exampleBox.className = 'example-box';
-          exampleBox.innerText = item.Examples;
-          exampleBox.style.display = 'none';
+          selected.forEach(item => {
+              const btn = document.createElement('button');
+              btn.className = 'word-button';
+              btn.innerText = item.English_Word;
 
-          btn.addEventListener('click', () => {
-              exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
+              const exampleBox = document.createElement('div');
+              exampleBox.className = 'example-box';
+              exampleBox.innerText = item.Examples;
+
+              btn.addEventListener('click', () => {
+                  exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
+              });
+
+              wordContainer.appendChild(btn);
+              wordContainer.appendChild(exampleBox);
           });
+      }
 
-          wordContainer.appendChild(btn);
-          wordContainer.appendChild(exampleBox);
-      });
+      // ilk açılışta random 5 kelime
+      showRandomWords();
+
+      // butona basınca random 5 kelime
+      randomBtn.addEventListener('click', showRandomWords);
+
   })
   .catch(err => console.error('CSV yüklenemedi:', err));
 </script>
