@@ -29,13 +29,14 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 fetch('english_words_seen.csv')
   .then(response => response.text())
   .then(text => {
+      // CSV satırlarını ayır
       const lines = text.trim().split('\n').slice(1); // başlık satırını atla
       const wordsData = lines.map(line => {
           const firstComma = line.indexOf(',');
           const word = line.slice(0, firstComma).replace(/^\"|\"$/g,'').trim();
           let examplesRaw = line.slice(firstComma+1).replace(/^\"|\"$/g,'').trim();
 
-          // Her satırı ayır ve baştaki "- " veya "- -" gibi fazlalıkları temizle
+          // Satırları ayır, baştaki fazlalıkları temizle (- veya - -)
           const examples = examplesRaw.split(/\n/)
                                     .map(e => e.replace(/^-\s*-?\s*/, '').trim())
                                     .filter(e => e);
@@ -54,7 +55,7 @@ fetch('english_words_seen.csv')
           selected.forEach(item => {
               const btn = document.createElement('button');
               btn.className = 'word-button';
-              btn.innerText = item.English_Word; // sadece kelime görünür
+              btn.innerText = item.English_Word; // sadece kelime görünecek
 
               const exampleBox = document.createElement('div');
               exampleBox.className = 'example-box';
@@ -67,7 +68,6 @@ fetch('english_words_seen.csv')
               });
               exampleBox.appendChild(ul);
 
-              // Tek tıklama ile toggle
               btn.addEventListener('click', () => {
                   exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
               });
