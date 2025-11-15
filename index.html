@@ -25,7 +25,7 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 <div class="word-container" id="wordContainer"></div>
 
 <script>
-// CSV'den çekilecek veri
+// CSV'den veri çek
 fetch('english_words_seen.csv')
   .then(response => response.text())
   .then(text => {
@@ -33,7 +33,9 @@ fetch('english_words_seen.csv')
       const wordsData = lines.map(line => {
           const firstComma = line.indexOf(',');
           const word = line.slice(0, firstComma).replace(/^\"|\"$/g,'').trim();
-          const examples = line.slice(firstComma+1).replace(/^\"|\"$/g,'').replace(/\\"/g,'"').trim();
+          const examplesRaw = line.slice(firstComma+1).replace(/^\"|\"$/g,'').replace(/\\"/g,'"').trim();
+          // Her satırdaki tüm cümleleri listeye dönüştür
+          const examples = examplesRaw.split(/\n|(?<=\.)/).filter(e => e.trim() !== '').map(e => e.trim());
           return { English_Word: word, Examples: examples };
       });
 
@@ -52,7 +54,15 @@ fetch('english_words_seen.csv')
 
               const exampleBox = document.createElement('div');
               exampleBox.className = 'example-box';
-              exampleBox.innerText = item.Examples;
+
+              // Tüm cümleleri madde olarak ekle
+              const ul = document.createElement('ul');
+              item.Examples.forEach(ex => {
+                  const li = document.createElement('li');
+                  li.innerText = ex;
+                  ul.appendChild(li);
+              });
+              exampleBox.appendChild(ul);
 
               btn.addEventListener('click', () => {
                   exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
@@ -63,10 +73,10 @@ fetch('english_words_seen.csv')
           });
       }
 
-      // ilk açılışta random 5 kelime
+      // İlk açılışta random 5 kelime
       showRandomWords();
 
-      // butona basınca random 5 kelime
+      // Random butonuna basınca başka 5 kelime
       randomBtn.addEventListener('click', showRandomWords);
 
   })
