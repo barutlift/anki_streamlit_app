@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelime Oyunu</title>
+<style>
+body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
+.word-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+.word-button { background-color: #FFD60A; color: black; padding: 12px 20px; font-size: 1.1rem; font-weight: bold; border-radius: 50px; border: 2px solid #333; cursor: pointer; transition: all 0.3s; }
+.word-button:hover { background-color: #FFC300; transform: translateY(-2px); }
+.example-box { background-color: #333; color: #fff; padding: 10px 16px; border-radius: 10px; margin-top: 5px; white-space: pre-line; max-width: 90%; word-wrap: break-word; }
+@media (max-width: 600px) {
+    .word-button { font-size: 1rem; padding: 10px 16px; min-width: 120px; }
+    .example-box { font-size: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>Kelime Oyunu</h1>
+<div class="word-container" id="wordContainer"></div>
+
+<script>
+// CSV dosyasından veri okuyacak ve JSON olarak yükleyecek (GitHub Pages ile uyumlu)
+fetch('english_words_seen.csv')
+  .then(response => response.text())
+  .then(text => {
+      const lines = text.trim().split('\n').slice(1); // başlık satırını atla
+      const wordsData = lines.map(line => {
+          const parts = line.split(',');
+          // İlk virgül kelime ve kalan kısmı örnekler olarak al
+          const word = parts[0].replace(/^"|"$/g, '').trim();
+          const examples = parts.slice(1).join(',').replace(/^"|"$/g, '').replace(/\"/g, '"').trim();
+          return { English_Word: word, Examples: examples };
+      });
+
+      const wordContainer = document.getElementById('wordContainer');
+
+      wordsData.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = 'word-button';
+          btn.innerText = item.English_Word;
+
+          const exampleBox = document.createElement('div');
+          exampleBox.className = 'example-box';
+          exampleBox.innerText = item.Examples;
+          exampleBox.style.display = 'none';
+
+          btn.addEventListener('click', () => {
+              exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
+          });
+
+          wordContainer.appendChild(btn);
+          wordContainer.appendChild(exampleBox);
+      });
+  })
+  .catch(err => console.error('CSV yüklenemedi:', err));
+</script>
+
+</body>
+</html>
