@@ -25,77 +25,64 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 <div class="word-container" id="wordContainer"></div>
 
 <script>
-// Basit CSV parser (çift tırnak ve yeni satırlar destekli)
-function parseCSV(text) {
+// CSV'den veri çekmek için
+async function loadCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     const data = [];
-    let buffer = "";
-    for (let i = 1; i < lines.length; i++) { // başlık atla
+
+    for (let i = 1; i < lines.length; i++) { // başlığı atla
         let line = lines[i];
-        if (line.startsWith('"') && !line.endsWith('"')) {
-            buffer += line + "\n";
-            continue;
-        }
-        if (buffer) {
-            line = buffer + line;
-            buffer = "";
-        }
-        const match = line.match(/^"?(.*?)"?,"?(.*?)"?$/);
+        // satır içi tırnak ve virgül problemleri için
+        const match = line.match(/^"?(.*?)"?,"?(.*)"?$/);
         if (match) {
             const word = match[1].trim();
             const examplesRaw = match[2].trim();
-            const examples = examplesRaw.split(/\r?\n/)
-                                    .map(e => e.replace(/^-\s*-?\s*/, '').trim())
-                                    .filter(e => e);
+            const examples = examplesRaw.split(/\r?\n/).map(e => e.replace(/^-\s*-?\s*/, '').trim()).filter(e => e);
             data.push({ English_Word: word, Examples: examples });
         }
     }
     return data;
 }
 
-fetch('english_words_seen.csv')
-  .then(res => res.text())
-  .then(text => {
-      const wordsData = parseCSV(text);
+loadCSV('english_words_seen.csv').then(wordsData => {
+    const wordContainer = document.getElementById('wordContainer');
+    const randomBtn = document.getElementById('randomBtn');
 
-      const wordContainer = document.getElementById('wordContainer');
-      const randomBtn = document.getElementById('randomBtn');
+    function showRandomWords() {
+        wordContainer.innerHTML = '';
+        const shuffled = [...wordsData].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 5);
 
-      function showRandomWords() {
-          wordContainer.innerHTML = '';
-          const shuffled = wordsData.sort(() => 0.5 - Math.random());
-          const selected = shuffled.slice(0, 5);
+        selected.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'word-button';
+            btn.innerText = item.English_Word;
 
-          selected.forEach(item => {
-              const btn = document.createElement('button');
-              btn.className = 'word-button';
-              btn.innerText = item.English_Word;
+            const exampleBox = document.createElement('div');
+            exampleBox.className = 'example-box';
 
-              const exampleBox = document.createElement('div');
-              exampleBox.className = 'example-box';
+            const ul = document.createElement('ul');
+            item.Examples.forEach(ex => {
+                const li = document.createElement('li');
+                li.innerText = ex;
+                ul.appendChild(li);
+            });
+            exampleBox.appendChild(ul);
 
-              const ul = document.createElement('ul');
-              item.Examples.forEach(ex => {
-                  const li = document.createElement('li');
-                  li.innerText = ex;
-                  ul.appendChild(li);
-              });
-              exampleBox.appendChild(ul);
+            btn.addEventListener('click', () => {
+                exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
+            });
 
-              btn.addEventListener('click', () => {
-                  exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
-              });
+            wordContainer.appendChild(btn);
+            wordContainer.appendChild(exampleBox);
+        });
+    }
 
-              wordContainer.appendChild(btn);
-              wordContainer.appendChild(exampleBox);
-          });
-      }
-
-      showRandomWords();
-      randomBtn.addEventListener('click', showRandomWords);
-
-  })
-  .catch(err => console.error('CSV yüklenemedi:', err));
+    showRandomWords();
+    randomBtn.addEventListener('click', showRandomWords);
+});
 </script>
 
 </body>
