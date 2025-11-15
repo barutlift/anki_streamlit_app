@@ -54,7 +54,7 @@ fetch('english_words_seen.csv')
           selected.forEach(item => {
               const btn = document.createElement('button');
               btn.className = 'word-button';
-              btn.innerText = item.English_Word;
+              btn.innerText = item.English_Word; // sadece kelime görünür
 
               const exampleBox = document.createElement('div');
               exampleBox.className = 'example-box';
@@ -67,6 +67,7 @@ fetch('english_words_seen.csv')
               });
               exampleBox.appendChild(ul);
 
+              // Tek tıklama ile toggle
               btn.addEventListener('click', () => {
                   exampleBox.style.display = exampleBox.style.display === 'none' ? 'block' : 'none';
               });
