@@ -25,24 +25,38 @@ h1 { text-align: center; color: #1E3A8A; font-size: 2rem; }
 <div class="word-container" id="wordContainer"></div>
 
 <script>
-// CSV'den veri çek
-fetch('english_words_seen.csv')
-  .then(response => response.text())
-  .then(text => {
-      // CSV satırlarını ayır
-      const lines = text.trim().split('\n').slice(1); // başlık satırını atla
-      const wordsData = lines.map(line => {
-          const firstComma = line.indexOf(',');
-          const word = line.slice(0, firstComma).replace(/^\"|\"$/g,'').trim();
-          let examplesRaw = line.slice(firstComma+1).replace(/^\"|\"$/g,'').trim();
-
-          // Satırları ayır, baştaki fazlalıkları temizle (- veya - -)
-          const examples = examplesRaw.split(/\n/)
+// Basit CSV parser (çift tırnak ve yeni satırlar destekli)
+function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    const data = [];
+    let buffer = "";
+    for (let i = 1; i < lines.length; i++) { // başlık atla
+        let line = lines[i];
+        if (line.startsWith('"') && !line.endsWith('"')) {
+            buffer += line + "\n";
+            continue;
+        }
+        if (buffer) {
+            line = buffer + line;
+            buffer = "";
+        }
+        const match = line.match(/^"?(.*?)"?,"?(.*?)"?$/);
+        if (match) {
+            const word = match[1].trim();
+            const examplesRaw = match[2].trim();
+            const examples = examplesRaw.split(/\r?\n/)
                                     .map(e => e.replace(/^-\s*-?\s*/, '').trim())
                                     .filter(e => e);
+            data.push({ English_Word: word, Examples: examples });
+        }
+    }
+    return data;
+}
 
-          return { English_Word: word, Examples: examples };
-      });
+fetch('english_words_seen.csv')
+  .then(res => res.text())
+  .then(text => {
+      const wordsData = parseCSV(text);
 
       const wordContainer = document.getElementById('wordContainer');
       const randomBtn = document.getElementById('randomBtn');
@@ -55,7 +69,7 @@ fetch('english_words_seen.csv')
           selected.forEach(item => {
               const btn = document.createElement('button');
               btn.className = 'word-button';
-              btn.innerText = item.English_Word; // sadece kelime görünecek
+              btn.innerText = item.English_Word;
 
               const exampleBox = document.createElement('div');
               exampleBox.className = 'example-box';
